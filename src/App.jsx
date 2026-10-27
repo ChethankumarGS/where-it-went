@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import Icon from './Icon.jsx'
 import { CATEGORIES, catOf, iso, inr, seed, startOfWeek } from './data.js'
 
 const KEY = 'kharcha.expenses.v1'
+const DKEY = 'kharcha.demo.v1'
+const loadDemo = () => { const v = localStorage.getItem(DKEY); return v === null ? !localStorage.getItem(KEY) : v === '1' }
 const load = () => {
   try {
     const raw = localStorage.getItem(KEY)
@@ -15,6 +18,7 @@ const short = (d) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'sho
 
 export default function App() {
   const [items, setItems] = useState(load)
+  const [demo, setDemo] = useState(loadDemo)
   const [tab, setTab] = useState(() => ['home','fill','stats','history'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home')
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1))
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
@@ -22,6 +26,7 @@ export default function App() {
   const [toast, setToast] = useState('')
 
   useEffect(() => localStorage.setItem(KEY, JSON.stringify(items)), [items])
+  useEffect(() => localStorage.setItem(DKEY, demo ? '1' : '0'), [demo])
   useEffect(() => {
     if (!toast) return
     const t = setTimeout(() => setToast(''), 1800)
@@ -65,11 +70,17 @@ export default function App() {
           <div className="brand">
             <span className="brand-k">ಖ</span>harcha
           </div>
-          <button className="menu" aria-label="Reset" title="Reset to demo data" onClick={() => {
-            if (confirm('Reset to demo data? Your entries will be replaced.')) setItems(seed())
+          <button className="menu" aria-label="Reset" title="Load sample data" onClick={() => {
+            if (confirm('Replace everything with sample data?')) { setItems(seed()); setDemo(true) }
           }}>☰</button>
         </header>
 
+        {demo && (
+          <div className="demo" role="status">
+            <span><b>Sample data.</b> These entries are made up, not your spending.</span>
+            <button onClick={() => { setItems([]); setDemo(false) }}>Start fresh</button>
+          </div>
+        )}
         <main className="body">
           {tab === 'home' && (
             <Home month={month} shiftMonth={shiftMonth} total={total} prevTotal={prevTotal} byCat={byCat}
@@ -84,9 +95,9 @@ export default function App() {
         {toast && <div className="toast">{toast}</div>}
 
         <nav className="tabs">
-          {[['home', '⌂', 'Home'], ['fill', '▤', 'Fill'], ['stats', '◔', 'Stats'], ['history', '↺', 'History']].map(([id, ic, label]) => (
+          {[['home', 'home', 'Home'], ['fill', 'fill', 'Fill'], ['stats', 'stats', 'Stats'], ['history', 'history', 'History']].map(([id, ic, label]) => (
             <button key={id} className={tab === id ? 'on' : ''} onClick={() => nav(id)}>
-              <span className="ic">{ic}</span>
+              <span className="ic"><Icon name={ic} size={22} /></span>
               {label}
             </button>
           ))}
@@ -160,7 +171,7 @@ function Home({ month, shiftMonth, total, prevTotal, byCat, items, weekStart, se
       <section className="grid">
         {CATEGORIES.map((c) => (
           <button key={c.id} className="cat" onClick={() => onPick(c.id)}>
-            <span className="cat-ic">{c.icon}</span>
+            <span className="cat-ic"><Icon name={c.icon} /></span>
             {c.label}
           </button>
         ))}
@@ -194,11 +205,11 @@ function Fill({ onAdd, onDone }) {
     <>
       <section className="row-head">
         <h2>Add Expenses</h2>
-        <label className="date"><span>📅</span><input type="date" value={date} max={iso(new Date())} onChange={(e) => setDate(e.target.value)} /></label>
+        <label className="date"><Icon name="cal" size={16} /><input type="date" value={date} max={iso(new Date())} onChange={(e) => setDate(e.target.value)} /></label>
       </section>
       {order.map((cat) => (
         <section key={cat} className="group">
-          <div className="group-head"><span>{catOf(cat).icon} {catOf(cat).label}</span><button onClick={() => more(cat)} aria-label={`Add row to ${catOf(cat).label}`}>+</button></div>
+          <div className="group-head"><span className="gl"><Icon name={catOf(cat).icon} size={18} /> {catOf(cat).label}</span><button onClick={() => more(cat)} aria-label={`Add row to ${catOf(cat).label}`}>+</button></div>
           {rows[cat].map((x, i) => (
             <div key={i} className="inputs">
               <input placeholder="enter name" value={x.name} onChange={(e) => set(cat, i, 'name', e.target.value)} />
@@ -274,7 +285,7 @@ function Stats({ monthItems, byCat, total, month, shiftMonth }) {
       </section>
 
       <section className="insight">
-        <i>💡</i>
+        <i className="bulb">!</i>
         <div><b>Spending insight</b>
           <p>{top ? `${top.label} accounts for ${share}% of your spending this month. You spent on ${activeDays} day${activeDays === 1 ? '' : 's'}, about ${inr(avg)} on each.` : 'Add some expenses to see insights.'}</p>
         </div>
@@ -301,7 +312,7 @@ function History({ items, remove }) {
           <div className="hist-head"><span>{short(new Date(date + 'T00:00:00'))}</span><b>{inr(list.reduce((s, x) => s + x.amount, 0))}</b></div>
           {list.map((x) => (
             <div key={x.id} className="hist-row">
-              <span className="cat-ic sm">{catOf(x.category).icon}</span>
+              <span className="cat-ic sm"><Icon name={catOf(x.category).icon} size={18} /></span>
               <div><b>{x.name}</b><small>{catOf(x.category).label}</small></div>
               <span className="amt">{inr(x.amount)}</span>
               <button aria-label="Delete" onClick={() => remove(x.id)}>✕</button>
