@@ -1,8 +1,8 @@
-# Kharcha
+# Where It Went
 
 A simple expense tracker for everyday household spending. Inspired by a reel about turning a paper expense notebook into an app.
 
-**Live:** https://kharcha-kohl.vercel.app
+**Live:** https://where-it-went.vercel.app
 
 ## What it does
 - **Home**: month overview with total spent, top categories, a week-by-week bar chart, and quick category buttons.

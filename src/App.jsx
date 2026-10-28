@@ -66,9 +66,9 @@ export default function App() {
     <div className="stage">
       <div className="phone">
         <header className="top">
-          <div className="avatar">K</div>
+          <div className="avatar">W</div>
           <div className="brand">
-            <span className="brand-k">ಖ</span>harcha
+            <span className="brand-k">W</span>here It Went
           </div>
           <button className="menu" aria-label="Reset" title="Load sample data" onClick={() => {
             if (confirm('Replace everything with sample data?')) { setItems(seed()); setDemo(true) }
